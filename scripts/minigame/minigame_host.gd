@@ -68,6 +68,5 @@ func confirm_spawn(peer_id: int, pos: Vector3) -> void:
 		_spawned_players[peer_id].global_position = pos
 
 
-func _on_match_ended(winner_name: String) -> void:
-	if hud and hud.has_method("show_winner"):
-		hud.show_winner(winner_name)
+func _on_match_ended(_winner_name: String) -> void:
+	pass

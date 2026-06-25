@@ -12,6 +12,7 @@ extends Control
 
 
 func _ready() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	host_button.pressed.connect(_on_host_pressed)
 	join_button.pressed.connect(_on_join_pressed)
 	play_button.pressed.connect(_on_play_pressed)
@@ -24,6 +25,11 @@ func _ready() -> void:
 
 	play_button.disabled = true
 	status_label.text = "Hoste oder trete einem Spiel bei (max. 6 Spieler)"
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_VISIBILITY_CHANGED and visible:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
 func _on_host_pressed() -> void:
@@ -55,13 +61,14 @@ func _on_play_pressed() -> void:
 @rpc("any_peer", "call_remote", "reliable")
 func _request_start() -> void:
 	if multiplayer.is_server():
-		GameManager.start_survival_cage()
+		GameManager.start_session()
 		rpc("sync_start_game")
 
 
 @rpc("authority", "call_local", "reliable")
 func sync_start_game() -> void:
-	GameManager.start_survival_cage()
+	if NetworkManager.is_host():
+		GameManager.start_session()
 
 
 func _on_server_started() -> void:

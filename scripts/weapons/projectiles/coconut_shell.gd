@@ -25,7 +25,9 @@ func _explode() -> void:
 	for result in results:
 		var body: Node = result["collider"]
 		if body is PlayerController:
-			var dir := (body.global_position - global_position).normalized()
+			if shooter:
+				GameManager.report_hit(body as PlayerController, shooter)
+			var dir: Vector3 = ((body as Node3D).global_position - global_position).normalized()
 			(body as PlayerController).apply_knockback(dir, knockback)
 		elif body is BreakableTile:
 			if randf() < tile_break_chance:

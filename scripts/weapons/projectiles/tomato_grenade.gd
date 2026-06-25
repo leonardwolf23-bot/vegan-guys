@@ -37,5 +37,7 @@ func _explode() -> void:
 		var body: Node = result["collider"]
 		if body is PlayerController:
 			var player := body as PlayerController
+			if shooter:
+				GameManager.report_hit(player, shooter)
 			var dir := (player.global_position - global_position).normalized()
 			player.apply_knockback(Vector3(dir.x * back_force, launch_force, dir.z * back_force), 1.0)

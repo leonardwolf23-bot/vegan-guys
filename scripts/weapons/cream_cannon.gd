@@ -21,6 +21,7 @@ func _perform_attack() -> void:
 
 func _on_cream_hit(body: Node3D, blob: ProjectileBase) -> void:
 	if body is PlayerController and body != blob.shooter:
+		GameManager.report_hit(body as PlayerController, blob.shooter)
 		(body as PlayerController).apply_status(
 			PlayerStatusEffects.STATUS_SLOW,
 			slow_duration,

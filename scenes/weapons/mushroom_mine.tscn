@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://mushroomweapon01"]
+
+[ext_resource type="Script" path="res://scripts/weapons/mushroom_mine_weapon.gd" id="1"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_1"]
+top_radius = 0.15
+bottom_radius = 0.2
+height = 0.1
+
+[node name="MushroomMineWeapon" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_1")

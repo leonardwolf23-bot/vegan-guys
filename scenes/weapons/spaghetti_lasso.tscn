@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://spaghettilasso01"]
+
+[ext_resource type="Script" path="res://scripts/weapons/spaghetti_lasso.gd" id="1"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_1"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.8
+
+[node name="SpaghettiLasso" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_1")

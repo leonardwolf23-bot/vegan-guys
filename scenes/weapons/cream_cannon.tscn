@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://creamcannon01"]
+
+[ext_resource type="Script" path="res://scripts/weapons/cream_cannon.gd" id="1"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_1"]
+top_radius = 0.12
+bottom_radius = 0.18
+height = 0.5
+
+[node name="CreamCannon" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_1")

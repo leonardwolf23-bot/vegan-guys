@@ -118,20 +118,27 @@ func _process_authority(delta: float) -> void:
 		_equip_weapon((weapon_index - 1 + available_weapons.size()) % max(available_weapons.size(), 1))
 
 
+func _get_movement_basis() -> Basis:
+	return Basis.from_euler(Vector3(0, rotation.y, 0))
+
+
 func _process_normal_movement(delta: float) -> void:
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
-	var direction := (camera_pivot.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	var direction := Vector3.ZERO
+	if input_dir != Vector2.ZERO:
+		direction = (_get_movement_basis() * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
 	var speed := walk_speed * status_effects.get_speed_multiplier()
 
-	if direction:
+	if direction != Vector3.ZERO:
 		velocity.x = direction.x * speed
 		velocity.z = direction.z * speed
-		var target_rotation := atan2(direction.x, direction.z)
-		rotation.y = lerp_angle(rotation.y, target_rotation, rotation_speed * delta)
+		var target_mesh_y := atan2(direction.x, direction.z) - rotation.y
+		mesh.rotation.y = lerp_angle(mesh.rotation.y, target_mesh_y, rotation_speed * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0, speed)
 		velocity.z = move_toward(velocity.z, 0, speed)
+		mesh.rotation.y = lerp_angle(mesh.rotation.y, 0.0, rotation_speed * delta)
 
 	if Input.is_action_just_pressed("jump") and is_on_floor():
 		velocity.y = jump_velocity * status_effects.get_jump_multiplier()
@@ -140,7 +147,7 @@ func _process_normal_movement(delta: float) -> void:
 		_start_slide()
 
 	if Input.is_action_just_pressed("dodge") and not is_on_floor():
-		_start_dodge(direction if direction != Vector3.ZERO else -camera_pivot.global_transform.basis.z)
+		_start_dodge(direction if direction != Vector3.ZERO else -_get_movement_basis().z)
 
 
 func _start_slide() -> void:

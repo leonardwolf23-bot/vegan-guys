@@ -85,17 +85,34 @@ Ein 3D-Multiplayer-Partyspiel im Stil von Fall Guys — mit veganem Theme. Bis z
 
 Jede Waffe ist eine eigene Szene unter `scenes/weapons/`. Einfach das `Mesh`-Kind durch dein Modell ersetzen — die Logik bleibt im Script.
 
-### Tile-Texturen
+### Tile-Texturen und Break-Warnung
 
 1. `scenes/minigames/survival_cage/breakable_tile.tscn` öffnen
 2. Am `MeshInstance3D` neues Material zuweisen oder Textur auf `assets/materials/tile_placeholder.tres` ändern
+3. Am Tile im Inspector unter **Breaking**:
+   - `break_delay` — Sekunden Warnung bevor die Fliese fällt (Standard: 1.5)
+   - `warning_enabled` — Blinken/Wackeln ein/aus
+   - `warning_color` — Farbe der Warnung (Standard: Orange)
 
-### Arena-Größe
+### Arena-Größe (automatisch generiert)
 
 In `survival_cage.tscn` → Node `Arena` im Inspector:
+- `arena_mode` auf **Generated** lassen
 - `grid_width`, `grid_depth` — Käfiggröße
 - `random_break_interval` — wie oft Tiles brechen
 - `tiles_per_break_wave` — wie viele pro Welle
+
+### Arena manuell bauen
+
+1. `scenes/minigames/survival_cage/survival_cage.tscn` öffnen
+2. Node `Arena` auswählen → `arena_mode` auf **Manual** setzen
+3. Unter `Arena/Tiles` beliebig viele `breakable_tile.tscn` Instanzen platzieren (Boden + Wände)
+4. Unter `Arena/SpawnPoints` **Marker3D**-Nodes für Spieler-Spawn setzen (z. B. `Spawn0` … `Spawn5`)
+5. Pro Tile im Inspector:
+   - **Is Floor Tile** aktivieren für Bodenfliesen (brechen zufällig weg)
+   - Deaktivieren für Wände (bleiben stehen, können aber von Waffen zerstört werden)
+
+> Tipp: Du kannst `breakable_tile.tscn` duplizieren und das Mesh/Material anpassen — die Zerstörungs-Logik bleibt erhalten.
 
 ## Projektstruktur
 

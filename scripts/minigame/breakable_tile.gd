@@ -8,6 +8,7 @@ signal tile_broken
 @export var break_delay: float = 0.0
 @export var fall_speed: float = 5.0
 @export var auto_break_chance: float = 0.0  # Per-second chance when enabled
+@export var is_floor_tile: bool = false  # Floor tiles can randomly break away during the match
 
 var _is_broken := false
 var _falling := false
@@ -19,6 +20,8 @@ func _ready() -> void:
 	collision_layer = 16  # breakables layer
 	collision_mask = 0
 	_mesh = get_node_or_null("MeshInstance3D") as MeshInstance3D
+	if not is_floor_tile and global_position.y < 0.5:
+		is_floor_tile = true
 
 
 func break_tile(delay: float = 0.0) -> void:

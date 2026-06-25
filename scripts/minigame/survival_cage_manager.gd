@@ -1,8 +1,14 @@
 extends Node3D
-## Generates the survival cage arena with breakable floor/wall tiles.
-## Adjust grid_size, tile_size, and break settings in the inspector.
+## Survival cage arena: procedural generation or manually placed tiles in the editor.
+## In manual mode, place BreakableTile scenes under Tiles and Marker3D nodes under SpawnPoints.
+
+enum ArenaMode {
+	GENERATED,
+	MANUAL,
+}
 
 @export_group("Arena")
+@export var arena_mode: ArenaMode = ArenaMode.GENERATED
 @export var grid_width: int = 12
 @export var grid_depth: int = 12
 @export var tile_size: float = 2.0
@@ -24,7 +30,13 @@ var _break_timer := 0.0
 func _ready() -> void:
 	if tile_scene == null:
 		tile_scene = preload("res://scenes/minigames/survival_cage/breakable_tile.tscn")
-	_generate_arena()
+
+	match arena_mode:
+		ArenaMode.GENERATED:
+			_generate_arena()
+		ArenaMode.MANUAL:
+			_collect_manual_arena()
+
 	if break_wave_enabled and multiplayer.is_server():
 		_start_break_waves()
 
@@ -43,7 +55,6 @@ func _generate_arena() -> void:
 	var half_w := grid_width * tile_size * 0.5
 	var half_d := grid_depth * tile_size * 0.5
 
-	# Floor tiles
 	for x in grid_width:
 		for z in grid_depth:
 			var pos := Vector3(
@@ -53,7 +64,6 @@ func _generate_arena() -> void:
 			)
 			_spawn_tile(pos)
 
-	# Wall tiles (cage edges)
 	for h in wall_height:
 		var y := (h + 1) * tile_size
 		for x in grid_width:
@@ -63,7 +73,18 @@ func _generate_arena() -> void:
 			_spawn_tile(Vector3(-half_w + tile_size * 0.5, y, z * tile_size - half_d + tile_size * 0.5))
 			_spawn_tile(Vector3(half_w - tile_size * 0.5, y, z * tile_size - half_d + tile_size * 0.5))
 
-	_setup_spawn_points(half_w, half_d)
+	_setup_generated_spawn_points(half_w, half_d)
+
+
+func _collect_manual_arena() -> void:
+	_all_tiles.clear()
+	for node in tiles_container.find_children("", "BreakableTile", true, false):
+		_all_tiles.append(node as BreakableTile)
+
+	if _all_tiles.is_empty():
+		push_warning("Manual arena: No BreakableTile nodes found under Arena/Tiles.")
+
+	_ensure_manual_spawn_points()
 
 
 func _spawn_tile(pos: Vector3) -> void:
@@ -73,7 +94,7 @@ func _spawn_tile(pos: Vector3) -> void:
 	_all_tiles.append(tile)
 
 
-func _setup_spawn_points(half_w: float, half_d: float) -> void:
+func _setup_generated_spawn_points(half_w: float, half_d: float) -> void:
 	var positions := [
 		Vector3(-half_w * 0.5, 2, -half_d * 0.5),
 		Vector3(half_w * 0.5, 2, -half_d * 0.5),
@@ -89,22 +110,45 @@ func _setup_spawn_points(half_w: float, half_d: float) -> void:
 		spawn_points.add_child(marker)
 
 
+func _ensure_manual_spawn_points() -> void:
+	var markers: Array[Marker3D] = []
+	for child in spawn_points.get_children():
+		if child is Marker3D:
+			markers.append(child)
+
+	if markers.is_empty():
+		push_warning("Manual arena: No Marker3D under Arena/SpawnPoints. Using default spawn at (0, 2, 0).")
+		var marker := Marker3D.new()
+		marker.name = "Spawn0"
+		marker.position = Vector3(0, 2, 0)
+		spawn_points.add_child(marker)
+
+
 func get_spawn_position(index: int) -> Vector3:
 	var marker := spawn_points.get_node_or_null("Spawn%d" % index) as Marker3D
 	if marker:
 		return marker.global_position
+
+	var markers: Array[Marker3D] = []
+	for child in spawn_points.get_children():
+		if child is Marker3D:
+			markers.append(child)
+	if index < markers.size():
+		return markers[index].global_position
+
 	return Vector3(0, 2, 0)
 
 
 func _break_random_tiles() -> void:
 	var floor_tiles: Array[BreakableTile] = []
 	for tile in _all_tiles:
-		if is_instance_valid(tile) and tile.global_position.y < 0.5:
+		if is_instance_valid(tile) and tile.is_floor_tile:
 			floor_tiles.append(tile)
 	floor_tiles.shuffle()
 	for i in mini(tiles_per_break_wave, floor_tiles.size()):
-		floor_tiles[i].break_tile(randf_range(0.3, 1.5))
-		rpc("sync_break_tile", floor_tiles[i].get_path(), randf_range(0.3, 1.5))
+		var delay := randf_range(0.3, 1.5)
+		floor_tiles[i].break_tile(delay)
+		rpc("sync_break_tile", floor_tiles[i].get_path(), delay)
 
 
 @rpc("authority", "call_local", "reliable")

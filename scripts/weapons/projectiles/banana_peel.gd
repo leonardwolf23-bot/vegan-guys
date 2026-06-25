@@ -6,6 +6,7 @@ extends Area3D
 
 var _timer := 0.0
 var _triggered := false
+var shooter: PlayerController = null
 
 
 func _ready() -> void:
@@ -15,6 +16,7 @@ func _ready() -> void:
 
 
 func launch(direction: Vector3, speed: float, owner: PlayerController) -> void:
+	shooter = owner
 	velocity_internal = direction.normalized() * speed
 
 
@@ -32,6 +34,8 @@ func _physics_process(delta: float) -> void:
 
 func _on_body_entered(body: Node3D) -> void:
 	if body is PlayerController:
+		if shooter:
+			GameManager.report_hit(body as PlayerController, shooter)
 		(body as PlayerController).apply_status(PlayerStatusEffects.STATUS_SLIP, slip_duration)
 		_triggered = true
 		velocity_internal = Vector3.ZERO

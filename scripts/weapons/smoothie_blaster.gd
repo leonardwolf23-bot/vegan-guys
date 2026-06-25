@@ -23,4 +23,5 @@ func _perform_attack() -> void:
 
 func _on_smoothie_hit(body: Node3D, smoothie: ProjectileBase) -> void:
 	if body is PlayerController and body != smoothie.shooter:
+		GameManager.report_hit(body as PlayerController, smoothie.shooter)
 		(body as PlayerController).apply_status(PlayerStatusEffects.STATUS_SMOOTHIE_BLIND, blind_duration)

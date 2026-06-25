@@ -22,6 +22,7 @@ func _perform_attack() -> void:
 
 func _on_chili_hit(body: Node3D, chili: ProjectileBase) -> void:
 	if body is PlayerController and body != chili.shooter:
+		GameManager.report_hit(body as PlayerController, chili.shooter)
 		(body as PlayerController).apply_status(
 			PlayerStatusEffects.STATUS_CHILI,
 			chili_duration,

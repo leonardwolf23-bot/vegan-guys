@@ -31,5 +31,6 @@ func _on_body_entered(body: Node3D) -> void:
 	if not _armed:
 		return
 	if body is PlayerController and body != owner_player:
+		GameManager.report_hit(body as PlayerController, owner_player)
 		(body as PlayerController).apply_knockback(Vector3(0, 1, 0), launch_force)
 		queue_free()

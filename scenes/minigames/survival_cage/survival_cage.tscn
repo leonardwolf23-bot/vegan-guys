@@ -64,7 +64,90 @@ layout_mode = 2
 text = "Waffe: -"
 theme_override_font_sizes/font_size = 18
 
+[node name="RoundLabel" type="Label" parent="HUD/Panel/VBox"]
+layout_mode = 2
+text = "Runde 1 / 10"
+theme_override_font_sizes/font_size = 18
+
+[node name="KillsLabel" type="Label" parent="HUD/Panel/VBox"]
+layout_mode = 2
+text = "Kills: 0"
+theme_override_font_sizes/font_size = 18
+
+[node name="RoundScorePanel" type="Panel" parent="HUD"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -180.0
+offset_right = 280.0
+offset_bottom = 180.0
+
+[node name="TitleLabel" type="Label" parent="HUD/RoundScorePanel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 540.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 28
+text = "Runde abgeschlossen"
+horizontal_alignment = 1
+
+[node name="ScoreList" type="Label" parent="HUD/RoundScorePanel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 70.0
+offset_right = 540.0
+offset_bottom = 300.0
+theme_override_font_sizes/font_size = 22
+text = "Score"
+horizontal_alignment = 1
+
+[node name="FinalScoreboardPanel" type="Panel" parent="HUD"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -200.0
+offset_right = 300.0
+offset_bottom = 200.0
+
+[node name="TitleLabel" type="Label" parent="HUD/FinalScoreboardPanel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 560.0
+offset_bottom = 70.0
+theme_override_font_sizes/font_size = 30
+text = "Final Scoreboard"
+horizontal_alignment = 1
+
+[node name="ScoreList" type="Label" parent="HUD/FinalScoreboardPanel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 80.0
+offset_right = 560.0
+offset_bottom = 300.0
+theme_override_font_sizes/font_size = 24
+text = "Score"
+horizontal_alignment = 1
+
+[node name="BackButton" type="Button" parent="HUD/FinalScoreboardPanel"]
+layout_mode = 0
+offset_left = 150.0
+offset_top = 310.0
+offset_right = 430.0
+offset_bottom = 360.0
+text = "Zurück zum Menü"
+
 [node name="WinnerPanel" type="Panel" parent="HUD"]
+visible = false
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -86,6 +169,7 @@ text = "Gewinner!"
 horizontal_alignment = 1
 
 [node name="BackButton" type="Button" parent="HUD/WinnerPanel"]
+visible = false
 layout_mode = 0
 offset_left = 150.0
 offset_top = 90.0

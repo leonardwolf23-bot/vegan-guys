@@ -22,6 +22,7 @@ func _perform_attack() -> void:
 		return
 	var body: Node = result.get("collider")
 	if body is PlayerController and body != owner_player:
+		GameManager.report_hit(body as PlayerController, owner_player)
 		var knock_dir := direction
 		knock_dir.y = 0.1
 		(body as PlayerController).apply_knockback(knock_dir, knockback)

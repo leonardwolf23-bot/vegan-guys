@@ -45,6 +45,10 @@ var sync_position := Vector3.ZERO
 var sync_rotation_y := 0.0
 
 
+func get_peer_id() -> int:
+	return name.to_int() if name.is_valid_int() else multiplayer.get_unique_id()
+
+
 func _ready() -> void:
 	if not is_multiplayer_authority():
 		camera.current = false
@@ -120,18 +124,21 @@ func _process_authority(delta: float) -> void:
 
 func _process_normal_movement(delta: float) -> void:
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
-	var direction := (camera_pivot.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	var direction := Vector3.ZERO
+	if input_dir != Vector2.ZERO:
+		direction = (Basis.from_euler(Vector3(0, rotation.y, 0)) * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
 	var speed := walk_speed * status_effects.get_speed_multiplier()
 
-	if direction:
+	if direction != Vector3.ZERO:
 		velocity.x = direction.x * speed
 		velocity.z = direction.z * speed
-		var target_rotation := atan2(direction.x, direction.z)
-		rotation.y = lerp_angle(rotation.y, target_rotation, rotation_speed * delta)
+		var target_mesh_y := atan2(direction.x, direction.z) - rotation.y
+		mesh.rotation.y = lerp_angle(mesh.rotation.y, target_mesh_y, rotation_speed * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0, speed)
 		velocity.z = move_toward(velocity.z, 0, speed)
+		mesh.rotation.y = lerp_angle(mesh.rotation.y, 0.0, rotation_speed * delta)
 
 	if Input.is_action_just_pressed("jump") and is_on_floor():
 		velocity.y = jump_velocity * status_effects.get_jump_multiplier()
@@ -140,7 +147,7 @@ func _process_normal_movement(delta: float) -> void:
 		_start_slide()
 
 	if Input.is_action_just_pressed("dodge") and not is_on_floor():
-		_start_dodge(direction if direction != Vector3.ZERO else -camera_pivot.global_transform.basis.z)
+		_start_dodge(direction if direction != Vector3.ZERO else -Basis.from_euler(Vector3(0, rotation.y, 0)).z)
 
 
 func _start_slide() -> void:
@@ -255,14 +262,27 @@ func _check_elimination() -> void:
 
 
 func _eliminate() -> void:
+	if not _is_alive:
+		return
 	_is_alive = false
 	visible = false
 	set_physics_process(false)
-	var pid := name.to_int() if name.is_valid_int() else multiplayer.get_unique_id()
-	GameManager.eliminate_player(pid)
 	eliminated.emit()
-	if is_multiplayer_authority():
-		rpc("sync_eliminate")
+	rpc("sync_eliminate")
+
+	var pid := get_peer_id()
+	if not multiplayer.multiplayer_peer:
+		GameManager.eliminate_player(pid)
+	elif multiplayer.is_server():
+		GameManager.eliminate_player(pid)
+	elif is_multiplayer_authority():
+		request_eliminate.rpc_id(1, pid)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func request_eliminate(player_id: int) -> void:
+	if multiplayer.is_server():
+		GameManager.eliminate_player(player_id)
 
 
 @rpc("any_peer", "call_local", "reliable")

@@ -40,6 +40,8 @@ func _on_body_entered(body: Node3D) -> void:
 
 
 func _hit_player(player: PlayerController) -> void:
+	if shooter:
+		GameManager.report_hit(player, shooter)
 	if knockback_force > 0.0:
 		var dir := (player.global_position - global_position).normalized()
 		dir.y = 0.2

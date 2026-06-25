@@ -28,6 +28,6 @@ func _swing_hit(origin: Vector3, direction: Vector3) -> void:
 	for result in results:
 		var body: Node = result["collider"]
 		if body is PlayerController and body != owner_player:
-			var knock_dir := (body.global_position - origin).normalized()
+			var knock_dir: Vector3 = ((body as Node3D).global_position - origin).normalized()
 			knock_dir.y = 0.3
 			(body as PlayerController).apply_knockback(knock_dir, knockback)

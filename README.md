@@ -85,10 +85,14 @@ Ein 3D-Multiplayer-Partyspiel im Stil von Fall Guys — mit veganem Theme. Bis z
 
 Jede Waffe ist eine eigene Szene unter `scenes/weapons/`. Einfach das `Mesh`-Kind durch dein Modell ersetzen — die Logik bleibt im Script.
 
-### Tile-Texturen
+### Tile-Texturen und Break-Warnung
 
 1. `scenes/minigames/survival_cage/breakable_tile.tscn` öffnen
 2. Am `MeshInstance3D` neues Material zuweisen oder Textur auf `assets/materials/tile_placeholder.tres` ändern
+3. Am Tile im Inspector unter **Breaking**:
+   - `break_delay` — Sekunden Warnung bevor die Fliese fällt (Standard: 1.5)
+   - `warning_enabled` — Blinken/Wackeln ein/aus
+   - `warning_color` — Farbe der Warnung (Standard: Orange)
 
 ### Arena-Größe (automatisch generiert)
 

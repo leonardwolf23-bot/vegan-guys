@@ -146,9 +146,10 @@ func _break_random_tiles() -> void:
 			floor_tiles.append(tile)
 	floor_tiles.shuffle()
 	for i in mini(tiles_per_break_wave, floor_tiles.size()):
-		var delay := randf_range(0.3, 1.5)
-		floor_tiles[i].break_tile(delay)
-		rpc("sync_break_tile", floor_tiles[i].get_path(), delay)
+		var tile := floor_tiles[i]
+		var delay := tile.break_delay + randf_range(0.0, 0.5)
+		tile.break_tile(delay)
+		rpc("sync_break_tile", tile.get_path(), delay)
 
 
 @rpc("authority", "call_local", "reliable")

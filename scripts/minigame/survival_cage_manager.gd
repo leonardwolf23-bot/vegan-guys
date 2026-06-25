@@ -1,0 +1,118 @@
+extends Node3D
+## Generates the survival cage arena with breakable floor/wall tiles.
+## Adjust grid_size, tile_size, and break settings in the inspector.
+
+@export_group("Arena")
+@export var grid_width: int = 12
+@export var grid_depth: int = 12
+@export var tile_size: float = 2.0
+@export var wall_height: int = 3
+@export var tile_scene: PackedScene
+
+@export_group("Breaking")
+@export var random_break_interval: float = 3.0
+@export var tiles_per_break_wave: int = 2
+@export var break_wave_enabled: bool = true
+
+@onready var tiles_container: Node3D = $Tiles
+@onready var spawn_points: Node3D = $SpawnPoints
+
+var _all_tiles: Array[BreakableTile] = []
+var _break_timer := 0.0
+
+
+func _ready() -> void:
+	if tile_scene == null:
+		tile_scene = preload("res://scenes/minigames/survival_cage/breakable_tile.tscn")
+	_generate_arena()
+	if break_wave_enabled and multiplayer.is_server():
+		_start_break_waves()
+
+
+func _process(delta: float) -> void:
+	if not break_wave_enabled or not multiplayer.is_server():
+		return
+	_break_timer += delta
+	if _break_timer >= random_break_interval:
+		_break_timer = 0.0
+		_break_random_tiles()
+
+
+func _generate_arena() -> void:
+	_all_tiles.clear()
+	var half_w := grid_width * tile_size * 0.5
+	var half_d := grid_depth * tile_size * 0.5
+
+	# Floor tiles
+	for x in grid_width:
+		for z in grid_depth:
+			var pos := Vector3(
+				x * tile_size - half_w + tile_size * 0.5,
+				0,
+				z * tile_size - half_d + tile_size * 0.5
+			)
+			_spawn_tile(pos)
+
+	# Wall tiles (cage edges)
+	for h in wall_height:
+		var y := (h + 1) * tile_size
+		for x in grid_width:
+			_spawn_tile(Vector3(x * tile_size - half_w + tile_size * 0.5, y, -half_d + tile_size * 0.5))
+			_spawn_tile(Vector3(x * tile_size - half_w + tile_size * 0.5, y, half_d - tile_size * 0.5))
+		for z in grid_depth:
+			_spawn_tile(Vector3(-half_w + tile_size * 0.5, y, z * tile_size - half_d + tile_size * 0.5))
+			_spawn_tile(Vector3(half_w - tile_size * 0.5, y, z * tile_size - half_d + tile_size * 0.5))
+
+	_setup_spawn_points(half_w, half_d)
+
+
+func _spawn_tile(pos: Vector3) -> void:
+	var tile: BreakableTile = tile_scene.instantiate()
+	tiles_container.add_child(tile)
+	tile.global_position = pos
+	_all_tiles.append(tile)
+
+
+func _setup_spawn_points(half_w: float, half_d: float) -> void:
+	var positions := [
+		Vector3(-half_w * 0.5, 2, -half_d * 0.5),
+		Vector3(half_w * 0.5, 2, -half_d * 0.5),
+		Vector3(-half_w * 0.5, 2, half_d * 0.5),
+		Vector3(half_w * 0.5, 2, half_d * 0.5),
+		Vector3(0, 2, 0),
+		Vector3(0, 2, -half_d * 0.3),
+	]
+	for i in positions.size():
+		var marker := Marker3D.new()
+		marker.name = "Spawn%d" % i
+		marker.position = positions[i]
+		spawn_points.add_child(marker)
+
+
+func get_spawn_position(index: int) -> Vector3:
+	var marker := spawn_points.get_node_or_null("Spawn%d" % index) as Marker3D
+	if marker:
+		return marker.global_position
+	return Vector3(0, 2, 0)
+
+
+func _break_random_tiles() -> void:
+	var floor_tiles: Array[BreakableTile] = []
+	for tile in _all_tiles:
+		if is_instance_valid(tile) and tile.global_position.y < 0.5:
+			floor_tiles.append(tile)
+	floor_tiles.shuffle()
+	for i in mini(tiles_per_break_wave, floor_tiles.size()):
+		floor_tiles[i].break_tile(randf_range(0.3, 1.5))
+		rpc("sync_break_tile", floor_tiles[i].get_path(), randf_range(0.3, 1.5))
+
+
+@rpc("authority", "call_local", "reliable")
+func sync_break_tile(tile_path: NodePath, delay: float) -> void:
+	var tile := get_node_or_null(tile_path) as BreakableTile
+	if tile:
+		tile.break_tile(delay)
+
+
+func _start_break_waves() -> void:
+	_break_timer = random_break_interval * 0.5

@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://leeklance01"]
+
+[ext_resource type="Script" path="res://scripts/weapons/leek_lance.gd" id="1"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_1"]
+top_radius = 0.05
+bottom_radius = 0.08
+height = 2.5
+
+[node name="LeekLance" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, -1.2)
+mesh = SubResource("CylinderMesh_1")

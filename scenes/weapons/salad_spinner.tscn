@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://saladspinner01"]
+
+[ext_resource type="Script" path="res://scripts/weapons/salad_spinner.gd" id="1"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_1"]
+top_radius = 0.3
+bottom_radius = 0.3
+height = 0.2
+
+[node name="SaladSpinner" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_1")

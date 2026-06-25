@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="24" fill="#4CAF50"/>
+  <circle cx="64" cy="52" r="28" fill="#81C784"/>
+  <ellipse cx="64" cy="95" rx="36" ry="20" fill="#388E3C"/>
+  <text x="64" y="58" text-anchor="middle" font-size="28" fill="#1B5E20">VG</text>
+</svg>
